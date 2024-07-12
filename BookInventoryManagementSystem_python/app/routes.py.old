@@ -1,0 +1,135 @@
+from flask import Blueprint, request, jsonify
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.DEBUG)
+
+from app.models import book
+from app.db.database import db
+
+routes = Blueprint("routes", __name__)
+
+@routes.route("/books", methods=["POST"])
+def add_book():
+    try:
+        data = request.get_json()
+        new_book = book.Book(title = data['title'], author = data['author'], year = data['year'], genre = data['genre'], price = data['price'], quantity = data['quantity'])
+        db.session.add(new_book)
+        db.session.commit()
+        logging.info(f"Book added: {new_book}")
+        return jsonify(data), 201
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
+        return jsonify({"error": "An error occurred"}), 400
+
+@routes.route("/books", methods=["GET"])
+def get_books():
+    try:
+        books = book.Book.query.all()
+        tmp = []
+        for i in books:
+            tmp.append(
+            {
+                "isbn": i.isbn,
+                "title": i.title,
+                "author": i.author,
+                "year": i.year,
+                "genre": i.genre,
+                "price": i.price,
+                "quantity": i.quantity
+            }
+            )
+        return tmp
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
+        return jsonify({"error": "An error occurred"}), 400
+
+@routes.route("/books/<int:isbn>", methods=["GET"])
+def get_book(isbn):
+    books = book.Book.query.get(isbn)
+    if books is None:
+        logging.error("Book not found")
+        return jsonify({"error": "Book not found"}), 404
+    books = { "isbn": books.isbn, "title": books.title, "author": books.author, "year": books.year, "genre": books.genre, "price": books.price, "quantity": books.quantity }
+    return jsonify(books)
+
+@routes.route("/books/<int:isbn>", methods=["DELETE"])
+def delete_book(isbn):
+    books = book.Book.query.get(isbn)
+    if books is None:
+        logging.error("Book not found")
+        return jsonify({"error": "Book not found"}), 404
+    db.session.delete(books)
+    db.session.commit()
+    logging.info(f"Book deleted: {books}")
+    return jsonify({"message": "Book deleted"})
+
+@routes.route("/books/<int:isbn>", methods=["PUT"])
+def update_book(isbn):
+    data = request.get_json()
+    books = book.Book.query.get(isbn)
+    if books is None:
+        logging.error("Book not found")
+        return jsonify({"error": "Book not found"}), 404
+    if 'title' in data:
+        books.title = data['title']
+    if 'author' in data:
+        books.author = data['author']
+    if 'year' in data:
+        books.year = data['year']
+    if 'genre' in data:
+        books.genre = data['genre']
+    if 'price' in data:
+        books.price = data['price']
+    if 'quantity' in data:
+        books.quantity = data['quantity']
+    db.session.commit()
+    logging.info(f"Book updated: {books}")
+    return jsonify({"message": "Book updated"})
+
+@routes.route("/books/genre/<int:genre>", methods=["GET"])
+def get_books_by_genre(genre):
+    books = book.Book.query.filter_by(genre=genre).all()
+    tmp = []
+    for i in books:
+        tmp.append({
+            "isbn": i.isbn,
+            "title": i.title,
+            "author": i.author,
+            "year": i.year,
+            "genre": i.genre,
+            "price": i.price,
+            "quantity": i.quantity
+        })
+    return tmp
+@routes.route("/books/author/<string:author>", methods=["GET"])
+def get_books_by_author(author):
+    books = book.Book.query.filter_by(author=author).all()
+    tmp = []
+    for i in books:
+        tmp.append({
+            "isbn": i.isbn,
+            "title": i.title,
+            "author": i.author,
+            "year": i.year,
+            "genre": i.genre,
+            "price": i.price,
+            "quantity": i.quantity
+        })
+    return tmp
+@routes.route("/books/title/<string:title>", methods=["GET"])
+def get_books_by_title(title):
+    books = book.Book.query.filter_by(title=title).all()
+    tmp = []
+    for i in books:
+        tmp.append({
+            "isbn": i.isbn,
+            "title": i.title,
+            "author": i.author,
+            "year": i.year,
+            "genre": i.genre,
+            "price": i.price,
+            "quantity": i.quantity
+        })
+    return tmp
+
+

@@ -1,0 +1,4 @@
+INFO:app.routes:Started
+INFO:app.routes:Finished
+INFO:werkzeug:127.0.0.1 - - [27/Jun/2024 16:45:49] "GET /books HTTP/1.1" 200 -
+INFO:werkzeug: * Detected change in '/home/arch/Desktop/python-library-project/BookInventoryManagementSystem_python/app/routes.py', reloading

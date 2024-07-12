@@ -1,0 +1,6 @@
+# Requirements
+python-flask
+python-mysql-connect
+python-flask-sqlalchemy
+python-pytest
+
